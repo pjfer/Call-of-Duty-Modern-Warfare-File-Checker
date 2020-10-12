@@ -76,7 +76,7 @@ func computeFolder(folderPath *string, statusReporter *winc.MultiEdit, progressB
 		}
 	}
 
-	statusReporter.AddLine("Folder hashing complete!")
+	statusReporter.AddLine("Folder hashing successfully completed!")
 
 	return filesAsMD5Values, nil
 }
@@ -107,7 +107,7 @@ func compareMD5Values(myMD5Values map[string]string, rightMD5Values map[string]s
 		}
 	}
 
-	statusReporter.AddLine("MD5 hashes successful compared!")
+	statusReporter.AddLine("MD5 hashes successfully compared!")
 
 	return diffFiles
 }
@@ -115,7 +115,7 @@ func compareMD5Values(myMD5Values map[string]string, rightMD5Values map[string]s
 func readMD5Values(filename *string, statusReporter *winc.MultiEdit) (map[string]string, error) {
 	file, err := os.Open(*filename)
 
-	statusReporter.AddLine("Writing the hashes into the file!")
+	statusReporter.AddLine("Reading the hashes from the file!")
 
 	if err != nil {
 		statusReporter.AddLine(err.Error())
@@ -144,6 +144,8 @@ func readMD5Values(filename *string, statusReporter *winc.MultiEdit) (map[string
 
 func writeMD5Values(filename *string, myMD5Values map[string]string, statusReporter *winc.MultiEdit, progressBarPercentage *winc.Edit) error {
 	file, err := os.Create(*filename)
+
+	statusReporter.AddLine("Writing the hashes into the file!")
 
 	if err != nil {
 		statusReporter.AddLine(err.Error())
@@ -237,21 +239,21 @@ func displayGUI() {
 	folderLabelX, folderLabelY := folderLabel.Pos()
 	folderLabelWidth, folderLabelHeight := folderLabel.Size()
 
-	saveFileLabel := winc.NewLabel(mainWindow)
-	saveFileLabel.SetPos(folderLabelX, folderLabelY+folderLabelHeight+10)
-	saveFileLabel.SetSize(folderLabelWidth, folderLabelHeight)
-	saveFileLabel.SetFont(font)
-	saveFileLabel.SetText("File to write the hashes obtained from your files")
-	saveFileLabelX, saveFileLabelY := saveFileLabel.Pos()
-	_, saveFileLabelHeight := saveFileLabel.Size()
+	myMD5FileLabel := winc.NewLabel(mainWindow)
+	myMD5FileLabel.SetPos(folderLabelX, folderLabelY+folderLabelHeight+10)
+	myMD5FileLabel.SetSize(folderLabelWidth, folderLabelHeight)
+	myMD5FileLabel.SetFont(font)
+	myMD5FileLabel.SetText("File to write the hashes obtained from your files")
+	myMD5FileLabelX, myMD5FileLabelY := myMD5FileLabel.Pos()
+	_, myMD5FileLabelHeight := myMD5FileLabel.Size()
 
-	readFileLabel := winc.NewLabel(mainWindow)
-	readFileLabel.SetPos(saveFileLabelX, saveFileLabelY+saveFileLabelHeight+10)
-	readFileLabel.SetSize(folderLabelWidth, saveFileLabelHeight)
-	readFileLabel.SetFont(font)
-	readFileLabel.SetText("File to read the hashes of the functional files")
-	_, readFileLabelY := readFileLabel.Pos()
-	_, readFileLabelHeight := readFileLabel.Size()
+	faultyFilesFileLabel := winc.NewLabel(mainWindow)
+	faultyFilesFileLabel.SetPos(myMD5FileLabelX, myMD5FileLabelY+myMD5FileLabelHeight+10)
+	faultyFilesFileLabel.SetSize(folderLabelWidth, myMD5FileLabelHeight)
+	faultyFilesFileLabel.SetFont(font)
+	faultyFilesFileLabel.SetText("File to write the possible faulty filenames")
+	_, faultyFilesFileLabelY := faultyFilesFileLabel.Pos()
+	_, faultyFilesFileLabelHeight := faultyFilesFileLabel.Size()
 
 	folderPath := winc.NewEdit(mainWindow)
 	folderPath.SetReadOnly(true)
@@ -268,19 +270,19 @@ func displayGUI() {
 		return
 	}
 
-	saveFilePath := winc.NewEdit(mainWindow)
-	saveFilePath.SetReadOnly(true)
-	saveFilePath.SetPos(folderLabelWidth+folderLabelX, saveFileLabelY)
-	saveFilePath.SetSize(folderPathWidth, saveFileLabelHeight)
-	saveFilePath.SetFont(font)
-	saveFilePath.SetText(currentDir + "\\results\\myMD5Values.txt")
+	myMD5FilePath := winc.NewEdit(mainWindow)
+	myMD5FilePath.SetReadOnly(true)
+	myMD5FilePath.SetPos(folderLabelWidth+folderLabelX, myMD5FileLabelY)
+	myMD5FilePath.SetSize(folderPathWidth, myMD5FileLabelHeight)
+	myMD5FilePath.SetFont(font)
+	myMD5FilePath.SetText(currentDir + "\\results\\myMD5Values.txt")
 
-	readFilePath := winc.NewEdit(mainWindow)
-	readFilePath.SetReadOnly(true)
-	readFilePath.SetPos(folderLabelWidth+folderLabelX, readFileLabelY)
-	readFilePath.SetSize(folderPathWidth, readFileLabelHeight)
-	readFilePath.SetFont(font)
-	readFilePath.SetText(currentDir + "\\results\\rightMD5Values.txt")
+	faultyFilesFilePath := winc.NewEdit(mainWindow)
+	faultyFilesFilePath.SetReadOnly(true)
+	faultyFilesFilePath.SetPos(folderLabelWidth+folderLabelX, faultyFilesFileLabelY)
+	faultyFilesFilePath.SetSize(folderPathWidth, faultyFilesFileLabelHeight)
+	faultyFilesFilePath.SetFont(font)
+	faultyFilesFilePath.SetText(currentDir + "\\results\\faultyFiles.txt")
 
 	hashButton := winc.NewPushButton(mainWindow)
 	saveButton := winc.NewPushButton(mainWindow)
@@ -302,23 +304,23 @@ func displayGUI() {
 		}
 	})
 
-	saveFileFolderBrowserButton := winc.NewPushButton(mainWindow)
-	saveFileFolderBrowserButton.SetText("...")
-	saveFileFolderBrowserButton.SetPos(folderLabelWidth+folderPathWidth+folderLabelX+5, saveFileLabelY)
-	saveFileFolderBrowserButton.SetSize(20, saveFileLabelHeight)
-	saveFileFolderBrowserButton.OnClick().Bind(func(e *winc.Event) {
+	myMD5FileFolderBrowserButton := winc.NewPushButton(mainWindow)
+	myMD5FileFolderBrowserButton.SetText("...")
+	myMD5FileFolderBrowserButton.SetPos(folderLabelWidth+folderPathWidth+folderLabelX+5, myMD5FileLabelY)
+	myMD5FileFolderBrowserButton.SetSize(20, myMD5FileLabelHeight)
+	myMD5FileFolderBrowserButton.OnClick().Bind(func(e *winc.Event) {
 		if folder, accepted := winc.ShowOpenFileDlg(mainWindow, "Select the file to write the MD5 values", "", 0, "C:\\"); accepted {
-			saveFilePath.SetText(string(folder))
+			myMD5FilePath.SetText(string(folder))
 		}
 	})
 
-	readFileFolderBrowserButton := winc.NewPushButton(mainWindow)
-	readFileFolderBrowserButton.SetText("...")
-	readFileFolderBrowserButton.SetPos(folderLabelWidth+folderPathWidth+folderLabelX+5, readFileLabelY)
-	readFileFolderBrowserButton.SetSize(20, readFileLabelHeight)
-	readFileFolderBrowserButton.OnClick().Bind(func(e *winc.Event) {
+	faultyFilesFileFolderBrowserButton := winc.NewPushButton(mainWindow)
+	faultyFilesFileFolderBrowserButton.SetText("...")
+	faultyFilesFileFolderBrowserButton.SetPos(folderLabelWidth+folderPathWidth+folderLabelX+5, faultyFilesFileLabelY)
+	faultyFilesFileFolderBrowserButton.SetSize(20, faultyFilesFileLabelHeight)
+	faultyFilesFileFolderBrowserButton.OnClick().Bind(func(e *winc.Event) {
 		if folder, accepted := winc.ShowOpenFileDlg(mainWindow, "Select the file to read the MD5 values", "", 0, "C:\\"); accepted {
-			readFilePath.SetText(string(folder))
+			faultyFilesFilePath.SetText(string(folder))
 		}
 	})
 
@@ -346,14 +348,6 @@ func displayGUI() {
 				winc.MsgBoxOk(mainWindow, "ERROR", err.Error())
 			} else {
 				myMD5Values = out
-
-				resultsReporter.AddLine("Hashes generated from your game files:")
-
-				for path, MD5Value := range myMD5Values {
-					resultsReporter.AddLine(fmt.Sprintf("%s: %s", path, MD5Value))
-				}
-
-				resultsReporter.AddLine("_" + strings.Repeat("_", 100))
 
 				t := time.Now()
 				elapsed := t.Sub(start)
@@ -383,7 +377,7 @@ func displayGUI() {
 
 		go func() {
 			start := time.Now()
-			filename := saveFilePath.Text()
+			filename := myMD5FilePath.Text()
 			filename = strings.TrimSuffix(filename, "\r\n")
 			writeMD5Values(&filename, myMD5Values, statusReporter, progressBarPercentage)
 
@@ -403,7 +397,6 @@ func displayGUI() {
 	compareButton.SetText("Compare the hashes")
 	compareButton.SetPos(saveButtonX+saveButtonWidth+10, saveButtonY)
 	compareButton.SetSize(saveButtonWidth, saveButtonHeight)
-	compareButton.SetEnabled(false)
 	compareButton.OnClick().Bind(func(e *winc.Event) {
 		hashButton.SetEnabled(false)
 		saveButton.SetEnabled(false)
@@ -412,34 +405,67 @@ func displayGUI() {
 
 		go func() {
 			start := time.Now()
-			filename := readFilePath.Text()
-			filename = strings.TrimSuffix(filename, "\r\n")
+			filename := currentDir + "\\results\\rightMD5Values.txt"
 			rightMD5Values, err := readMD5Values(&filename, statusReporter)
 
 			if err != nil {
 				statusReporter.AddLine(err.Error())
 				winc.MsgBoxOk(mainWindow, "ERROR", err.Error())
 			} else {
-				faultyMD5Values := compareMD5Values(myMD5Values, rightMD5Values, statusReporter, progressBarPercentage)
+				if len(myMD5Values) == 0 {
+					filename = myMD5FilePath.Text()
+					filename = strings.TrimSuffix(filename, "\r\n")
+					myMD5Values, err = readMD5Values(&filename, statusReporter)
 
-				resultsReporter.AddLine("Files that might be corrupted and their respective hashes:")
-
-				for path, MD5Value := range faultyMD5Values {
-					resultsReporter.AddLine(fmt.Sprintf("%s: %s", path, MD5Value))
+					if err != nil {
+						statusReporter.AddLine(err.Error())
+						winc.MsgBoxOk(mainWindow, "ERROR", err.Error())
+						return
+					}
 				}
 
-				resultsReporter.AddLine("_" + strings.Repeat("_", 100))
+				faultyMD5Values := compareMD5Values(myMD5Values, rightMD5Values, statusReporter, progressBarPercentage)
 
-				t := time.Now()
-				elapsed := t.Sub(start)
+				if len(faultyMD5Values) != 0 {
+					filename = faultyFilesFilePath.Text()
+					filename = strings.TrimSuffix(filename, "\r\n")
 
-				winc.MsgBoxOk(mainWindow, "Info", "Hash successfully compared in "+elapsed.String()+"!")
+					err = writeMD5Values(&filename, faultyMD5Values, statusReporter, progressBarPercentage)
+
+					if err != nil {
+						statusReporter.AddLine(err.Error())
+						winc.MsgBoxOk(mainWindow, "ERROR", err.Error())
+					} else {
+						resultsReporter.AddLine("Files that might be corrupted and their respective hashes:")
+
+						for path, MD5Value := range faultyMD5Values {
+							resultsReporter.AddLine(fmt.Sprintf("%s: %s", path, MD5Value))
+						}
+
+						resultsReporter.AddLine("_" + strings.Repeat("_", 100))
+
+						t := time.Now()
+						elapsed := t.Sub(start)
+
+						winc.MsgBoxOk(mainWindow, "Info", "Full Run successfully completed in "+elapsed.String()+"!")
+					}
+				} else {
+					resultsReporter.AddLine("It appears that you don't have corrupted files!")
+
+					t := time.Now()
+					elapsed := t.Sub(start)
+
+					winc.MsgBoxOk(mainWindow, "Info", "Full Run successfully completed in "+elapsed.String()+"!")
+				}
 			}
 
-			hashButton.SetEnabled(true)
-			saveButton.SetEnabled(true)
 			compareButton.SetEnabled(true)
-			fullRunButton.SetEnabled(true)
+
+			if folderPath.Text() != "" {
+				hashButton.SetEnabled(true)
+				saveButton.SetEnabled(true)
+				fullRunButton.SetEnabled(true)
+			}
 		}()
 	})
 
@@ -466,20 +492,11 @@ func displayGUI() {
 			} else {
 				myMD5Values = out
 
-				resultsReporter.AddLine("Hashes generated from your game files:")
-
-				for path, MD5Value := range myMD5Values {
-					resultsReporter.AddLine(fmt.Sprintf("%s: %s", path, MD5Value))
-				}
-
-				resultsReporter.AddLine("_" + strings.Repeat("_", 100))
-
-				filename := saveFilePath.Text()
+				filename := myMD5FilePath.Text()
 				filename = strings.TrimSuffix(filename, "\r\n")
 				writeMD5Values(&filename, myMD5Values, statusReporter, progressBarPercentage)
 
-				filename = readFilePath.Text()
-				filename = strings.TrimSuffix(filename, "\r\n")
+				filename = currentDir + "\\results\\rightMD5Values.txt"
 				rightMD5Values, err := readMD5Values(&filename, statusReporter)
 
 				if err != nil {
@@ -488,18 +505,37 @@ func displayGUI() {
 				} else {
 					faultyMD5Values := compareMD5Values(myMD5Values, rightMD5Values, statusReporter, progressBarPercentage)
 
-					resultsReporter.AddLine("Files that might be corrupted and their respective hashes:")
+					if len(faultyMD5Values) != 0 {
+						filename = faultyFilesFilePath.Text()
+						filename = strings.TrimSuffix(filename, "\r\n")
 
-					for path, MD5Value := range faultyMD5Values {
-						resultsReporter.AddLine(fmt.Sprintf("%s: %s", path, MD5Value))
+						err = writeMD5Values(&filename, faultyMD5Values, statusReporter, progressBarPercentage)
+
+						if err != nil {
+							statusReporter.AddLine(err.Error())
+							winc.MsgBoxOk(mainWindow, "ERROR", err.Error())
+						} else {
+							resultsReporter.AddLine("Files that might be corrupted and their respective hashes:")
+
+							for path, MD5Value := range faultyMD5Values {
+								resultsReporter.AddLine(fmt.Sprintf("%s: %s", path, MD5Value))
+							}
+
+							resultsReporter.AddLine("_" + strings.Repeat("_", 100))
+
+							t := time.Now()
+							elapsed := t.Sub(start)
+
+							winc.MsgBoxOk(mainWindow, "Info", "Full Run successfully completed in "+elapsed.String()+"!")
+						}
+					} else {
+						resultsReporter.AddLine("It appears that you don't have any corrupted files!")
+
+						t := time.Now()
+						elapsed := t.Sub(start)
+
+						winc.MsgBoxOk(mainWindow, "Info", "Full Run successfully completed in "+elapsed.String()+"!")
 					}
-
-					resultsReporter.AddLine("_" + strings.Repeat("_", 100))
-
-					t := time.Now()
-					elapsed := t.Sub(start)
-
-					winc.MsgBoxOk(mainWindow, "Info", "Full Run successfully completed in "+elapsed.String()+"!")
 				}
 			}
 
