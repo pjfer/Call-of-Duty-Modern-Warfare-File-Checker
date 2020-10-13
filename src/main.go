@@ -6,11 +6,14 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/tadvi/winc"
@@ -63,9 +66,9 @@ func computeFolder(folderPath *string, statusReporter *winc.MultiEdit, progressB
 
 	for idx := range files {
 		start := time.Now()
-		filename := files[idx][strings.Index(files[idx], "Battle.net"):]
 
-		if res, err := fileToMD5(&filename); err == nil {
+		if res, err := fileToMD5(&files[idx]); err == nil {
+			filename := files[idx][strings.Index(files[idx], "Battle.net"):]
 			filesAsMD5Values[filename] = res
 			t := time.Now()
 			elapsed := t.Sub(start)
@@ -222,7 +225,7 @@ func displayGUI() {
 	resultsReporterLabel.SetPos(statusReporterLabelX, 400)
 	resultsReporterLabel.SetSize(300, statusReporterLabelHeight)
 	resultsReporterLabel.SetFont(font)
-	resultsReporterLabel.SetText("Messages about the files' hashes values")
+	resultsReporterLabel.SetText("Messages about the possible corrupted files")
 	resultsReporterLabelX, resultsReporterLabelY := resultsReporterLabel.Pos()
 	_, resultsReporterLabelHeight := resultsReporterLabel.Size()
 
@@ -263,6 +266,14 @@ func displayGUI() {
 	folderPath.SetFont(font)
 	folderPathWidth, _ := folderPath.Size()
 
+	folderBrowserDialog, err := ioutil.ReadFile("src\\folderBrowserDialog.ps1")
+
+	if err != nil {
+		statusReporter.AddLine(err.Error())
+		winc.MsgBoxOk(mainWindow, "ERROR", err.Error())
+		return
+	}
+
 	currentDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 
 	if err != nil {
@@ -295,14 +306,19 @@ func displayGUI() {
 	folderBrowserButton.SetPos(folderLabelWidth+folderPathWidth+folderLabelX+5, folderLabelY)
 	folderBrowserButton.SetSize(20, folderLabelHeight)
 	folderBrowserButton.OnClick().Bind(func(e *winc.Event) {
-		if folder, accepted := winc.ShowOpenFileDlg(mainWindow, "Select the folder", "", 0, "C:\\"); accepted {
-			folderPath.SetText(string(folder))
+		go func() {
+			command := exec.Command("powershell", string(folderBrowserDialog))
+			command.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+			if folder, err := command.Output(); err == nil {
+				folderPath.SetText(string(folder))
 
-			hashButton.SetEnabled(true)
-			saveButton.SetEnabled(false)
-			compareButton.SetEnabled(false)
-			fullRunButton.SetEnabled(true)
-		}
+				if string(folder) != "\r\n" {
+					hashButton.SetEnabled(true)
+					saveButton.SetEnabled(false)
+					fullRunButton.SetEnabled(true)
+				}
+			}
+		}()
 	})
 
 	myMD5FileFolderBrowserButton := winc.NewPushButton(mainWindow)
