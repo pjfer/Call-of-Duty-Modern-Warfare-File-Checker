@@ -295,7 +295,7 @@ func displayGUI() {
 	folderBrowserButton.SetPos(folderLabelWidth+folderPathWidth+folderLabelX+5, folderLabelY)
 	folderBrowserButton.SetSize(20, folderLabelHeight)
 	folderBrowserButton.OnClick().Bind(func(e *winc.Event) {
-		if folder, accepted := winc.ShowBrowseFolderDlg(mainWindow, "Select Folder"); accepted {
+		if folder, accepted := winc.ShowOpenFileDlg(mainWindow, "Select the folder", "", 0, "C:\\"); accepted {
 			folderPath.SetText(string(folder))
 
 			hashButton.SetEnabled(true)
