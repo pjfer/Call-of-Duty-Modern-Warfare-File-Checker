@@ -63,9 +63,10 @@ func computeFolder(folderPath *string, statusReporter *winc.MultiEdit, progressB
 
 	for idx := range files {
 		start := time.Now()
+		filename := files[idx][strings.Index(files[idx], "Battle.net"):]
 
-		if res, err := fileToMD5(&files[idx]); err == nil {
-			filesAsMD5Values[files[idx]] = res
+		if res, err := fileToMD5(&filename); err == nil {
+			filesAsMD5Values[filename] = res
 			t := time.Now()
 			elapsed := t.Sub(start)
 			statusReporter.AddLine(fmt.Sprintf("File %s converted in %s", files[idx], elapsed.String()))
