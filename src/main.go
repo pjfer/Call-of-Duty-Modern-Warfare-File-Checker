@@ -309,18 +309,14 @@ func displayGUI() {
 		go func() {
 			command := exec.Command("powershell", string(folderBrowserDialog))
 			command.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-			if folder, err := command.Output(); err == nil {
-				if strings.Contains(string(folder), "Battle.net\\Call of Duty Modern Warfare") {
-					folderPath.SetText(string(folder))
 
-					if string(folder) != "\r\n" {
-						hashButton.SetEnabled(true)
-						saveButton.SetEnabled(false)
-						fullRunButton.SetEnabled(true)
-					}
-				} else {
-					statusReporter.AddLine("The folder must be the Call of Duty Modern Warfare folder, which is inside the Battle.net folder!")
-					winc.MsgBoxOk(mainWindow, "ERROR", "The folder must be the Call of Duty Modern Warfare folder, which is inside the Battle.net folder!")
+			if folder, err := command.Output(); err == nil {
+				folderPath.SetText(string(folder))
+
+				if string(folder) != "\r\n" {
+					hashButton.SetEnabled(true)
+					saveButton.SetEnabled(false)
+					fullRunButton.SetEnabled(true)
 				}
 			}
 		}()
