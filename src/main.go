@@ -68,7 +68,7 @@ func computeFolder(folderPath *string, statusReporter *winc.MultiEdit, progressB
 		start := time.Now()
 
 		if res, err := fileToMD5(&files[idx]); err == nil {
-			filename := files[idx][strings.Index(files[idx], "Battle.net"):]
+			filename := files[idx][strings.Index(files[idx], "Call of Duty Modern Warfare"):]
 			filesAsMD5Values[filename] = res
 			t := time.Now()
 			elapsed := t.Sub(start)
